@@ -217,7 +217,6 @@ export async function isBlockedUploadIp(env, uploadIp) {
 }
 
 // 构建唯一文件ID
-// 构建唯一文件ID
 export async function buildUniqueFileId(context, fileName, fileType = 'application/octet-stream') {
     const { env, url } = context;
 
@@ -245,11 +244,12 @@ export async function buildUniqueFileId(context, fileName, fileType = 'applicati
     // 处理文件名，移除特殊字符
     fileName = sanitizeFileName(fileName);
 
+    // const unique_index = Date.now() + Math.floor(Math.random() * 10000);
+    const unique_index  = '';
     let baseId = '';
 
     // 根据命名方式构建基础ID
     if (nameType === 'index') {
-        const unique_index = Date.now() + Math.floor(Math.random() * 10000);
         baseId = normalizedFolder ? `${normalizedFolder}/${unique_index}.${fileExt}` : `${unique_index}.${fileExt}`;
     } else if (nameType === 'origin') {
         baseId = normalizedFolder ? `${normalizedFolder}/${fileName}` : fileName;
@@ -262,19 +262,11 @@ export async function buildUniqueFileId(context, fileName, fileType = 'applicati
                 return testFullId;
             }
         }
-    } else { // default 类型
-        // 只使用原始文件名，不添加时间戳
-        baseId = normalizedFolder ? `${normalizedFolder}/${fileName}` : fileName;
-
-        // 检查文件是否已存在，如果存在则返回 null
-        if (await env.img_url.get(baseId) !== null) {
-            return null; // 文件已存在，返回 null
-        }
-
-        return baseId; // 文件不存在，返回原始文件名
+    } else {
+        baseId = normalizedFolder ? `${normalizedFolder}/${unique_index}_${fileName}` : `${unique_index}_${fileName}`;
     }
 
-    // 对于 index 和 origin 类型，检查基础ID是否已存在
+    // 检查基础ID是否已存在
     if (await env.img_url.get(baseId) === null) {
         return baseId;
     }
@@ -285,7 +277,6 @@ export async function buildUniqueFileId(context, fileName, fileType = 'applicati
         let duplicateId;
 
         if (nameType === 'index') {
-            const unique_index = '';
             const baseName = unique_index;
             duplicateId = normalizedFolder ?
                 `${normalizedFolder}/${baseName}(${counter}).${fileExt}` :
@@ -293,6 +284,13 @@ export async function buildUniqueFileId(context, fileName, fileType = 'applicati
         } else if (nameType === 'origin') {
             const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
             const ext = fileName.substring(fileName.lastIndexOf('.'));
+            duplicateId = normalizedFolder ?
+                `${normalizedFolder}/${nameWithoutExt}(${counter})${ext}` :
+                `${nameWithoutExt}(${counter})${ext}`;
+        } else {
+            const baseName = `${unique_index}_${fileName}`;
+            const nameWithoutExt = baseName.substring(0, baseName.lastIndexOf('.'));
+            const ext = baseName.substring(baseName.lastIndexOf('.'));
             duplicateId = normalizedFolder ?
                 `${normalizedFolder}/${nameWithoutExt}(${counter})${ext}` :
                 `${nameWithoutExt}(${counter})${ext}`;
@@ -311,98 +309,6 @@ export async function buildUniqueFileId(context, fileName, fileType = 'applicati
         }
     }
 }
-// export async function buildUniqueFileId(context, fileName, fileType = 'application/octet-stream') {
-//     const { env, url } = context;
-//
-//     let fileExt = fileName.split('.').pop();
-//     if (!fileExt || fileExt === fileName) {
-//         fileExt = fileType.split('/').pop();
-//         if (fileExt === fileType || fileExt === '' || fileExt === null || fileExt === undefined) {
-//             fileExt = 'unknown';
-//         }
-//     }
-//
-//     const nameType = url.searchParams.get('uploadNameType') || 'default';
-//     const uploadFolder = url.searchParams.get('uploadFolder') || '';
-//     const normalizedFolder = uploadFolder
-//         ? uploadFolder.replace(/^\/+/, '').replace(/\/{2,}/g, '/').replace(/\/$/, '')
-//         : '';
-//
-//     if (!isExtValid(fileExt)) {
-//         fileExt = fileType.split('/').pop();
-//         if (fileExt === fileType || fileExt === '' || fileExt === null || fileExt === undefined) {
-//             fileExt = 'unknown';
-//         }
-//     }
-//
-//     // 处理文件名，移除特殊字符
-//     fileName = sanitizeFileName(fileName);
-//
-//     // const unique_index = Date.now() + Math.floor(Math.random() * 10000);
-//     const unique_index  = '';
-//     let baseId = '';
-//
-//     // 根据命名方式构建基础ID
-//     if (nameType === 'index') {
-//         baseId = normalizedFolder ? `${normalizedFolder}/${unique_index}.${fileExt}` : `${unique_index}.${fileExt}`;
-//     } else if (nameType === 'origin') {
-//         baseId = normalizedFolder ? `${normalizedFolder}/${fileName}` : fileName;
-//     } else if (nameType === 'short') {
-//         // 对于短链接，直接在循环中生成不重复的ID
-//         while (true) {
-//             const shortId = generateShortId(8);
-//             const testFullId = normalizedFolder ? `${normalizedFolder}/${shortId}.${fileExt}` : `${shortId}.${fileExt}`;
-//             if (await env.img_url.get(testFullId) === null) {
-//                 return testFullId;
-//             }
-//         }
-//     } else {
-//         baseId = normalizedFolder ? `${normalizedFolder}/${unique_index}_${fileName}` : `${unique_index}_${fileName}`;
-//     }
-//
-//     // 检查基础ID是否已存在
-//     if (await env.img_url.get(baseId) === null) {
-//         return baseId;
-//     }
-//
-//     // 如果已存在，在文件名后面加上递增编号
-//     let counter = 1;
-//     while (true) {
-//         let duplicateId;
-//
-//         if (nameType === 'index') {
-//             const baseName = unique_index;
-//             duplicateId = normalizedFolder ?
-//                 `${normalizedFolder}/${baseName}(${counter}).${fileExt}` :
-//                 `${baseName}(${counter}).${fileExt}`;
-//         } else if (nameType === 'origin') {
-//             const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
-//             const ext = fileName.substring(fileName.lastIndexOf('.'));
-//             duplicateId = normalizedFolder ?
-//                 `${normalizedFolder}/${nameWithoutExt}(${counter})${ext}` :
-//                 `${nameWithoutExt}(${counter})${ext}`;
-//         } else {
-//             const baseName = `${unique_index}_${fileName}`;
-//             const nameWithoutExt = baseName.substring(0, baseName.lastIndexOf('.'));
-//             const ext = baseName.substring(baseName.lastIndexOf('.'));
-//             duplicateId = normalizedFolder ?
-//                 `${normalizedFolder}/${nameWithoutExt}(${counter})${ext}` :
-//                 `${nameWithoutExt}(${counter})${ext}`;
-//         }
-//
-//         // 检查新ID是否已存在
-//         if (await env.img_url.get(duplicateId) === null) {
-//             return duplicateId;
-//         }
-//
-//         counter++;
-//
-//         // 防止无限循环，最多尝试1000次
-//         if (counter > 1000) {
-//             throw new Error('无法生成唯一的文件ID');
-//         }
-//     }
-// }
 
 // 基于uploadId的一致性渠道选择
 export function selectConsistentChannel(channels, uploadId, loadBalanceEnabled) {
