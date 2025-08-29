@@ -263,7 +263,7 @@ export async function buildUniqueFileId(context, fileName, fileType = 'applicati
             }
         }
     } else {
-        baseId = normalizedFolder ? `${normalizedFolder}/${unique_index}_${fileName}` : `${unique_index}_${fileName}`;
+        baseId = normalizedFolder ? `${normalizedFolder}/${unique_index}${fileName}` : `${unique_index}${fileName}`;
     }
     
     // 检查基础ID是否已存在
@@ -288,7 +288,7 @@ export async function buildUniqueFileId(context, fileName, fileType = 'applicati
                 `${normalizedFolder}/${nameWithoutExt}(${counter})${ext}` : 
                 `${nameWithoutExt}(${counter})${ext}`;
         } else {
-            const baseName = `${unique_index}_${fileName}`;
+            const baseName = `${unique_index}${fileName}`;
             const nameWithoutExt = baseName.substring(0, baseName.lastIndexOf('.'));
             const ext = baseName.substring(baseName.lastIndexOf('.'));
             duplicateId = normalizedFolder ? 
