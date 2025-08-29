@@ -244,7 +244,8 @@ export async function buildUniqueFileId(context, fileName, fileType = 'applicati
     // 处理文件名，移除特殊字符
     fileName = sanitizeFileName(fileName);
 
-    const unique_index = Date.now() + Math.floor(Math.random() * 10000);
+    // const unique_index = Date.now() + Math.floor(Math.random() * 10000);
+    const unique_index  = '';
     let baseId = '';
     
     // 根据命名方式构建基础ID
